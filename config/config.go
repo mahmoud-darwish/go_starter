@@ -20,8 +20,8 @@ func InitConfig() error {
 	}
 
 	config = &Config{
-		DatabaseURL: getEnv("DATABASE_URL", "postgres://user:password@localhost:5432/dbname?sslmode=disable"),
-		JWTSecret:   getEnv("JWT_SECRET", "your-secret-key"),
+		DatabaseURL: getEnv("DATABASE_URL", "postgresql://mahmoudibrahim:kokowawa@localhost:5432/shouf?sslmode=disable"),
+		JWTSecret:   getEnv("JWT_SECRET", "my_ultra_secure_jwt_secret_key"),
 		Port:        getEnv("PORT", "8080"),
 	}
 	return nil

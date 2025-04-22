@@ -27,3 +27,15 @@ type NotificationResponseDTO struct {
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
 }
+
+func NotificationResponseDTOFromModel(n Notification) NotificationResponseDTO {
+	return NotificationResponseDTO{
+		ID:        n.ID,
+		UserID:    n.UserID,
+		ChannelID: n.ChannelID,
+		Content:   n.Content,
+		Source:    n.Source,
+		CreatedAt: n.CreatedAt,
+		UpdatedAt: n.UpdatedAt,
+	}
+}

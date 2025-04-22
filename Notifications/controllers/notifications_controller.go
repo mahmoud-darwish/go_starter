@@ -1,12 +1,15 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
+	"encoding/json"
 	"net/http"
 
-	"go_starter/Notifications/models"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"starter/Notifications/models"
+	//"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type NotificationController struct {
@@ -17,10 +20,10 @@ func NewNotificationController(db *gorm.DB) *NotificationController {
 	return &NotificationController{DB: db}
 }
 
-func (ctrl *NotificationController) Create(c *gin.Context) {
+func (ctrl *NotificationController) Create(w http.ResponseWriter, r *http.Request) {
 	var input models.NotificationCreateRequestDTO
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -33,60 +36,67 @@ func (ctrl *NotificationController) Create(c *gin.Context) {
 	}
 
 	if err := ctrl.DB.Create(&notification).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create notification"})
+		http.Error(w, "Failed to create notification", http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusCreated, models.NotificationResponseDTO(notification))
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(models.NotificationResponseDTOFromModel(notification))
 }
 
-func (ctrl *NotificationController) FindAll(c *gin.Context) {
+func (ctrl *NotificationController) FindAll(w http.ResponseWriter, r *http.Request) {
 	var notifications []models.Notification
 	if err := ctrl.DB.Find(&notifications).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve notifications"})
+		http.Error(w, "Failed to retrieve notifications", http.StatusInternalServerError)
 		return
 	}
 
 	var response []models.NotificationResponseDTO
 	for _, n := range notifications {
-		response = append(response, models.NotificationResponseDTO(n))
+		response = append(response, models.NotificationResponseDTOFromModel(n))
 	}
 
-	c.JSON(http.StatusOK, response)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 }
 
-func (ctrl *NotificationController) FindByID(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
+func (ctrl *NotificationController) FindByID(w http.ResponseWriter, r *http.Request) {
+	//idStr :=  // Or use chi.URLParam if using Chi routing
+	
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid notification ID"})
+		http.Error(w, "Invalid notification ID from findbyid", http.StatusBadRequest)
 		return
 	}
 
 	var notification models.Notification
 	if err := ctrl.DB.First(&notification, "id = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Notification not found"})
+		http.Error(w, "Notification not found", http.StatusNotFound)
 		return
 	}
 
-	c.JSON(http.StatusOK, models.NotificationResponseDTO(notification))
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(models.NotificationResponseDTOFromModel(notification))
 }
 
-func (ctrl *NotificationController) Update(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
+func (ctrl *NotificationController) Update(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid notification ID"})
+		http.Error(w, "Invalid notification ID", http.StatusBadRequest)
 		return
 	}
 
 	var input models.NotificationUpdateRequestDTO
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	var notification models.Notification
 	if err := ctrl.DB.First(&notification, "id = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Notification not found"})
+		http.Error(w, "Notification not found", http.StatusNotFound)
 		return
 	}
 
@@ -94,24 +104,26 @@ func (ctrl *NotificationController) Update(c *gin.Context) {
 	notification.Source = input.Source
 
 	if err := ctrl.DB.Save(&notification).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update notification"})
+		http.Error(w, "Failed to update notification", http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, models.NotificationResponseDTO(notification))
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(models.NotificationResponseDTOFromModel(notification))
 }
 
-func (ctrl *NotificationController) Delete(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
+func (ctrl *NotificationController) Delete(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid notification ID"})
+		http.Error(w, "Invalid notification ID", http.StatusBadRequest)
 		return
 	}
 
 	if err := ctrl.DB.Delete(&models.Notification{}, "id = ?", id).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete notification"})
+		http.Error(w, "Failed to delete notification", http.StatusInternalServerError)
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	w.WriteHeader(http.StatusNoContent)
 }
