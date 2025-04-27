@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/google/uuid"
+	"strconv"
 	"gorm.io/gorm"
 	"starter/Notifications/models"
 	//"strconv"
@@ -28,7 +28,7 @@ func (ctrl *NotificationController) Create(w http.ResponseWriter, r *http.Reques
 	}
 
 	notification := models.Notification{
-		ID:        uuid.New(),
+		//ID:        uuid.New(),
 		UserID:    input.UserID,
 		ChannelID: input.ChannelID,
 		Content:   input.Content,
@@ -64,11 +64,12 @@ func (ctrl *NotificationController) FindByID(w http.ResponseWriter, r *http.Requ
 	//idStr :=  // Or use chi.URLParam if using Chi routing
 	
 	idStr := chi.URLParam(r, "id")
-	id, err := uuid.Parse(idStr)
+	idUint, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		http.Error(w, "Invalid notification ID from findbyid", http.StatusBadRequest)
+		http.Error(w, "Invalid notification ID", http.StatusBadRequest)
 		return
 	}
+	id := uint(idUint)
 
 	var notification models.Notification
 	if err := ctrl.DB.First(&notification, "id = ?", id).Error; err != nil {
@@ -76,17 +77,19 @@ func (ctrl *NotificationController) FindByID(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(models.NotificationResponseDTOFromModel(notification))
 }
 
 func (ctrl *NotificationController) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
-	id, err := uuid.Parse(idStr)
+	idUint, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		http.Error(w, "Invalid notification ID", http.StatusBadRequest)
 		return
 	}
+	id := uint(idUint)
 
 	var input models.NotificationUpdateRequestDTO
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -114,11 +117,12 @@ func (ctrl *NotificationController) Update(w http.ResponseWriter, r *http.Reques
 
 func (ctrl *NotificationController) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
-	id, err := uuid.Parse(idStr)
+	idUint, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		http.Error(w, "Invalid notification ID", http.StatusBadRequest)
 		return
 	}
+	id := uint(idUint)
 
 	if err := ctrl.DB.Delete(&models.Notification{}, "id = ?", id).Error; err != nil {
 		http.Error(w, "Failed to delete notification", http.StatusInternalServerError)

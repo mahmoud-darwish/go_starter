@@ -3,22 +3,18 @@ package models
 import (
 	"time"
 
-	"github.com/google/uuid"
 )
 
 type LikeCreateRequestDTO struct {
-	UserID    uuid.UUID  `json:"user_id" validate:"required"`
-	VideoID uuid.UUID `json:"video_id" validate:"required"`
+    UserID  uint `json:"user_id" validate:"required"`
+    VideoID uint `json:"video_id" validate:"required"`
 }
-
-
-
 type LikeResponseDTO struct {
-	ID        uuid.UUID  `json:"id"`
-	UserID    uuid.UUID  `json:"user_id"`
-	VideoID uuid.UUID `json:"video_id" validate:"required"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
+    ID        uint  `json:"id"`
+    UserID    uint  `json:"user_id"`
+    VideoID   uint  `json:"video_id"`
+    CreatedAt time.Time  `json:"created_at"`
+    UpdatedAt time.Time  `json:"updated_at"`
 }
 
 func LikeResponseDTOFromModel(n Like) LikeResponseDTO {

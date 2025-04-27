@@ -2,15 +2,13 @@ package models
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type NotificationCreateRequestDTO struct {
-	UserID    uuid.UUID  `json:"user_id" validate:"required"`
-	ChannelID *uuid.UUID `json:"channel_id,omitempty"`
-	Content   string     `json:"content" validate:"required"`
-	Source    string     `json:"source" validate:"required"`
+	UserID    uint   `json:"user_id" validate:"required"`
+	ChannelID *uint  `json:"channel_id,omitempty"`
+	Content   string `json:"content" validate:"required"`
+	Source    string `json:"source" validate:"required"`
 }
 
 type NotificationUpdateRequestDTO struct {
@@ -19,13 +17,13 @@ type NotificationUpdateRequestDTO struct {
 }
 
 type NotificationResponseDTO struct {
-	ID        uuid.UUID  `json:"id"`
-	UserID    uuid.UUID  `json:"user_id"`
-	ChannelID *uuid.UUID `json:"channel_id,omitempty"`
-	Content   string     `json:"content"`
-	Source    string     `json:"source"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
+	ID        uint      `json:"id"`
+	UserID    uint      `json:"user_id"`
+	ChannelID *uint     `json:"channel_id,omitempty"`
+	Content   string    `json:"content"`
+	Source    string    `json:"source"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func NotificationResponseDTOFromModel(n Notification) NotificationResponseDTO {

@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/google/uuid"
+
 	"gorm.io/gorm"
 	"starter/Comments/models"
-	//"strconv"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -28,7 +28,7 @@ func (ctrl *CommentsController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	comment := models.Comment{
-		ID:        uuid.New(),
+		//ID:        uuid.New(),
 		UserID:    input.UserID,
 		VideoID: input.VideoID,
 		Content:   input.Content,
@@ -63,11 +63,12 @@ func (ctrl *CommentsController) FindByID(w http.ResponseWriter, r *http.Request)
 	//idStr :=  // Or use chi.URLParam if using Chi routing
 	
 	idStr := chi.URLParam(r, "id")
-	id, err := uuid.Parse(idStr)
+	idUint, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		http.Error(w, "Invalid comment ID from findbyid", http.StatusBadRequest)
+		http.Error(w, "Invalid notification ID", http.StatusBadRequest)
 		return
 	}
+	id := uint(idUint)
 
 	var comment models.Comment
 	if err := ctrl.DB.First(&comment, "id = ?", id).Error; err != nil {
