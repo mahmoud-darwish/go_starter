@@ -3,13 +3,14 @@ package models
 import (
 	"time"
 
-	"github.com/google/uuid"
+
 )
 
+
 type Notification struct {
-	ID        uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"` // Removed DB default
-	UserID    uuid.UUID  `gorm:"type:uuid;not null" json:"user_id"`
-	ChannelID *uuid.UUID `gorm:"type:uuid" json:"channel_id,omitempty"`
+	ID        uint       `gorm:"primaryKey;autoIncrement" json:"id"`
+	UserID    uint       `gorm:"not null" json:"user_id"`
+	ChannelID *uint      `json:"channel_id,omitempty"`
 	Content   string     `gorm:"type:text;not null" json:"content"`
 	Source    string     `gorm:"type:varchar(255);not null" json:"source"`
 	CreatedAt time.Time  `json:"created_at"`

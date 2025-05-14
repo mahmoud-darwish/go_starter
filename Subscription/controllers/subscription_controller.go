@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"starter/Subscription/models"
-	//"strconv"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -28,7 +27,7 @@ func (ctrl *SubscriptionController) Create(w http.ResponseWriter, r *http.Reques
 	}
 
 	subscription := models.Subscription{
-		ID:        uuid.New(),
+		//ID:        uuid.New(),
 		UserID:    input.UserID,
 		ChannelID: input.ChannelID,
 	}
@@ -60,13 +59,13 @@ func (ctrl *SubscriptionController) FindAll(w http.ResponseWriter, r *http.Reque
 
 func (ctrl *SubscriptionController) FindByID(w http.ResponseWriter, r *http.Request) {
 	//idStr :=  // Or use chi.URLParam if using Chi routing
-	
 	idStr := chi.URLParam(r, "id")
-	id, err := uuid.Parse(idStr)
+	idUint, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		http.Error(w, "Invalid subscription ID from findbyid", http.StatusBadRequest)
+		http.Error(w, "Invalid notification ID", http.StatusBadRequest)
 		return
 	}
+	id := uint(idUint)
 
 	var subscription models.Subscription
 	if err := ctrl.DB.First(&subscription, "id = ?", id).Error; err != nil {
@@ -82,11 +81,12 @@ func (ctrl *SubscriptionController) FindByID(w http.ResponseWriter, r *http.Requ
 
 func (ctrl *SubscriptionController) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
-	id, err := uuid.Parse(idStr)
+	idUint, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		http.Error(w, "Invalid subscription ID", http.StatusBadRequest)
+		http.Error(w, "Invalid notification ID", http.StatusBadRequest)
 		return
 	}
+	id := uint(idUint)
 
 	if err := ctrl.DB.Delete(&models.Subscription{}, "id = ?", id).Error; err != nil {
 		http.Error(w, "Failed to delete subscription", http.StatusInternalServerError)
