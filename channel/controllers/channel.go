@@ -3,21 +3,38 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
-
+	"github.com/go-playground/validator/v10"
+	"starter/internal/file"
+	"starter/pkg/utils"
+	"starter/pkg/logger"
 	"strconv"
 	"gorm.io/gorm"
 	"starter/channel/models"
 	//"strconv"
 	"starter/auth"
 	"github.com/go-chi/chi/v5"
+
+	
+
+	"fmt"
+
+
+
+	
 )
 
 type ChannelController struct {
 	DB *gorm.DB
+	Validator *validator.Validate
+	UploadSvc *file.UploadService
 }
 
 func NewChannelController(db *gorm.DB) *ChannelController {
-	return &ChannelController{DB: db}
+		return &ChannelController{
+		DB:        db,
+		Validator: validator.New(),
+		UploadSvc: file.NewUploadService(),
+	}
 }
 
 func (ctrl *ChannelController) Create(w http.ResponseWriter, r *http.Request) {
@@ -138,4 +155,67 @@ func (ctrl *ChannelController) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (c *ChannelController) UploadImage(w http.ResponseWriter, r *http.Request) {
+	log := logger.GetLogger()
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		log.Error().Err(err).Msg("Invalid channel ID")
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid channel ID")
+		return
+	}
+
+	err = r.ParseMultipartForm(10 << 20) // 10 MB max
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse multipart form")
+		utils.RespondWithError(w, http.StatusBadRequest, "Failed to parse form")
+		return
+	}
+
+	file, handler, err := r.FormFile("image")
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to retrieve file")
+		utils.RespondWithError(w, http.StatusBadRequest, "Failed to retrieve file")
+		return
+	}
+	defer file.Close()
+
+	var channel models.Channel
+	if err := c.DB.First(&channel, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			log.Warn().Int("id", id).Msg("Channel not found")
+			utils.RespondWithError(w, http.StatusNotFound, "Channel not found")
+		} else {
+			log.Error().Err(err).Int("id", id).Msg("Database error")
+			utils.RespondWithError(w, http.StatusInternalServerError, "Database error")
+		}
+		return
+	}
+
+	filename, err := c.UploadSvc.UploadFile(file, handler.Filename, fmt.Sprintf("channel_%d", id))
+	if err != nil {
+		log.Error().Err(err).Int("id", id).Msg("Failed to upload file")
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to upload file")
+		return
+	}
+
+	channel.Logo = filename
+	if err := c.DB.Save(&channel).Error; err != nil {
+		log.Error().Err(err).Int("id", id).Msg("Failed to update channel")
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to update channel")
+		return
+	}
+
+	respDTO := models.ChannelResponseDTO{
+		ID:          channel.ID,
+		UserID: 	channel.UserID,
+		Name:        channel.Name,
+		Logo:       channel.Logo,
+		Bio:       channel.Bio,
+		TimeStamp:   channel.TimeStamp,
+
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, respDTO)
 }

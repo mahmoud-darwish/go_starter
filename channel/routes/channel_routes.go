@@ -18,5 +18,6 @@ func RegisterChannelRoutes(r *chi.Mux, db *gorm.DB) {
 		r.Get("/{id}", ctrl. FindByID)
 		r.Put("/{id}", ctrl.Update)
 		r.Delete("/{id}", ctrl.Delete)
+		r.Post("/{id}/image", ctrl.UploadImage)
 	})
 }
