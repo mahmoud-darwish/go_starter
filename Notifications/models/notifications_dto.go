@@ -5,7 +5,7 @@ import (
 )
 
 type NotificationCreateRequestDTO struct {
-	UserID    uint   `json:"user_id" validate:"required"`
+	//UserID    uint   `json:"user_id" validate:"required"`
 	ChannelID *uint  `json:"channel_id,omitempty"`
 	Content   string `json:"content" validate:"required"`
 	Source    string `json:"source" validate:"required"`

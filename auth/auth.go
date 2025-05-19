@@ -20,12 +20,16 @@ func GenerateJWT(userID uint) (string, error) {
 	return token.SignedString([]byte(cfg.JWTSecret))
 }
 
-func VerifyJWT(tokenString string) (*jwt.Token, error) {
+func VerifyJWT(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 	cfg := config.GetConfig()
-	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
 		}
 		return []byte(cfg.JWTSecret), nil
 	})
+
+	return token, claims, err
 }

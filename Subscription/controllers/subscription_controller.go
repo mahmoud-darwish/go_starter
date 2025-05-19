@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 	"starter/Subscription/models"
 	"strconv"
-
+	"starter/auth"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -20,6 +20,11 @@ func NewSubscriptionController(db *gorm.DB) *SubscriptionController {
 }
 
 func (ctrl *SubscriptionController) Create(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(auth.UserIDKey).(uint)
+	if !ok {
+		http.Error(w, "Unauthorized: user ID not found", http.StatusUnauthorized)
+		return
+	}
 	var input models.SubscriptionCreateRequestDTO 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -28,7 +33,7 @@ func (ctrl *SubscriptionController) Create(w http.ResponseWriter, r *http.Reques
 
 	subscription := models.Subscription{
 		//ID:        uuid.New(),
-		UserID:    input.UserID,
+		UserID:    userID,
 		ChannelID: input.ChannelID,
 	}
 

@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 	"starter/Comments/models"
 	//"strconv"
-
+	"starter/auth"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -21,6 +21,11 @@ func NewCommentsController(db *gorm.DB) *CommentsController {
 }
 
 func (ctrl *CommentsController) Create(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(auth.UserIDKey).(uint)
+	if !ok {
+		http.Error(w, "Unauthorized: user ID not found", http.StatusUnauthorized)
+		return
+	}
 	var input models.CommentCreateRequestDTO
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -28,8 +33,8 @@ func (ctrl *CommentsController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	comment := models.Comment{
-		ID:        uuid.New(),
-		UserID:    input.UserID,
+		//ID:        uuid.New(),
+		UserID:    userID,
 		VideoID: input.VideoID,
 		Content:   input.Content,
 	}

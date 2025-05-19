@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"starter/auth"
 	"encoding/json"
 	"net/http"
 
@@ -20,15 +21,20 @@ func NewLikeController(db *gorm.DB) *LikeController {
 }
 
 func (ctrl *LikeController) Create(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(auth.UserIDKey).(uint)
+	if !ok {
+		http.Error(w, "Unauthorized: user ID not found", http.StatusUnauthorized)
+		return
+	}
 	var input models.LikeCreateRequestDTO
+	
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	like := models.Like{
-		//ID:        uuid.New(),
-		UserID:    input.UserID,
+		UserID:    userID,
 		VideoID: input.VideoID,
 		
 	}

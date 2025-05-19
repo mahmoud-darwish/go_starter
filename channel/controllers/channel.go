@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 	"starter/channel/models"
 	//"strconv"
-
+	"starter/auth"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -21,6 +21,11 @@ func NewChannelController(db *gorm.DB) *ChannelController {
 }
 
 func (ctrl *ChannelController) Create(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(auth.UserIDKey).(uint)
+	if !ok {
+		http.Error(w, "Unauthorized: user ID not found", http.StatusUnauthorized)
+		return
+	}
 	var input models.ChannelCreateRequestDTO
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -29,7 +34,7 @@ func (ctrl *ChannelController) Create(w http.ResponseWriter, r *http.Request) {
 
 	channel := models.Channel{
 	
-		UserID:    input.UserID,
+		UserID:    userID,
 		Name: input.Name,
 		Logo:   input.Logo,
 		Bio:    input.Bio,

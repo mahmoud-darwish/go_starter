@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 	"starter/Notifications/models"
 	//"strconv"
-
+	"starter/auth"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -21,6 +21,11 @@ func NewNotificationController(db *gorm.DB) *NotificationController {
 }
 
 func (ctrl *NotificationController) Create(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(auth.UserIDKey).(uint)
+	if !ok {
+		http.Error(w, "Unauthorized: user ID not found", http.StatusUnauthorized)
+		return
+	}
 	var input models.NotificationCreateRequestDTO
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -29,7 +34,7 @@ func (ctrl *NotificationController) Create(w http.ResponseWriter, r *http.Reques
 
 	notification := models.Notification{
 		//ID:        uuid.New(),
-		UserID:    input.UserID,
+		UserID:    userID,
 		ChannelID: input.ChannelID,
 		Content:   input.Content,
 		Source:    input.Source,

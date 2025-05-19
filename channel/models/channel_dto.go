@@ -5,7 +5,7 @@ import (
 )
 
 type ChannelCreateRequestDTO struct {
-	UserID    uint   `json:"user_id" validate:"required"`
+	//UserID    uint   `json:"user_id" validate:"required"`
 	Name   string `json:"Name" validate:"required"`
 	Logo    string `json:"Logo" validate:"required"`
 	Bio    string `json:"Bio" validate:"required"`

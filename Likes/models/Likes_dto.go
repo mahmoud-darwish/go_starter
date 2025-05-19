@@ -6,7 +6,8 @@ import (
 )
 
 type LikeCreateRequestDTO struct {
-    UserID  uint `json:"user_id" validate:"required"`
+    //UserID  uint `json:"user_id" validate:"required"`
+	
     VideoID uint `json:"video_id" validate:"required"`
 }
 type LikeResponseDTO struct {

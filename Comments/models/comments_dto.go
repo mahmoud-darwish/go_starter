@@ -3,20 +3,19 @@ package models
 import (
     "time"
 
-    "github.com/google/uuid"
 )
 
 
 type CommentCreateRequestDTO struct {
-    UserID  uuid.UUID `json:"user_id" validate:"required"`
-    VideoID uuid.UUID `json:"video_id" validate:"required"`
+    //UserID  uuid.UUID `json:"user_id" validate:"required"`
+    VideoID uint `json:"video_id" validate:"required"`
     Content string    `json:"content" validate:"required"`
 }
 
 type CommentResponseDTO struct {
-    ID        uuid.UUID `json:"id"`
-    UserID    uuid.UUID `json:"user_id"`
-    VideoID   uuid.UUID `json:"video_id"`
+    ID       uint `json:"id"`
+    UserID   uint `json:"user_id"`
+    VideoID  uint `json:"video_id"`
     Content   string    `json:"content"`
     CreatedAt time.Time `json:"created_at"`
     UpdatedAt time.Time `json:"updated_at"`

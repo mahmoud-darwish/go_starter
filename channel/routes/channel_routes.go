@@ -4,7 +4,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 	"starter/channel/controllers"
-	
+	"starter/auth"
 	
 
 )
@@ -12,7 +12,7 @@ import (
 func RegisterChannelRoutes(r *chi.Mux, db *gorm.DB) {
 	ctrl := controllers.NewChannelController(db)
 
-	r.Route("/channels", func(r chi.Router) {
+	r.With(auth.JWTAuthMiddleware).Route("/channels", func(r chi.Router) {
 		r.Post("/", ctrl.Create)
 		r.Get("/", ctrl.FindAll)  
 		r.Get("/{id}", ctrl. FindByID)
