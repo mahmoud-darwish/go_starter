@@ -12,6 +12,7 @@ import (
 	subscriptionsRoutes "starter/Subscription/routes"
 	likesRoutes "starter/Likes/routes"
 	channelRoutes "starter/channel/routes"
+	videoRoutes "starter/video/routes"
 
 
 	"github.com/go-chi/chi/v5"
@@ -30,6 +31,7 @@ func NewServer(db *gorm.DB) *http.Server {
 	subscriptionsRoutes.RegisterSubscriptionRoutes(r, db)
 	likesRoutes.RegisterLikesRoutes(r, db)
 	channelRoutes.RegisterChannelRoutes(r,db)
+	videoRoutes.RegisterVideoRoutes(r,db)
 
 	return &http.Server{
 		Addr:    ":" + config.GetConfig().Port,

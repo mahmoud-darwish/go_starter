@@ -219,3 +219,58 @@ func (c *ChannelController) UploadImage(w http.ResponseWriter, r *http.Request) 
 
 	utils.RespondWithJSON(w, http.StatusOK, respDTO)
 }
+// func (c *ChannelController) GetChannelId(w http.ResponseWriter, r *http.Request) {
+// 	userID, ok := r.Context().Value(auth.UserIDKey).(uint)
+// 	if !ok {
+// 		http.Error(w, "Unauthorized: user ID not found", http.StatusUnauthorized)
+// 		return
+// 	}
+
+// 	var channel models.Channel
+// 	if err := c.DB.First(&channel, "user_id = ?", userID).Error; err ==err  {
+// 		if err == err {
+// 			// No channel found for this user
+// 			resp := map[string]int{"channel_id": -1}
+// 			w.Header().Set("Content-Type", "application/json")
+// 			json.NewEncoder(w).Encode(resp)
+// 			return
+// 		}
+// 		// Other DB error
+// 		http.Error(w, "Database error", http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	// Return just the channel ID
+// 	resp := map[string]uint{"channel_id": channel.ID}
+// 	w.Header().Set("Content-Type", "application/json")
+// 	json.NewEncoder(w).Encode(resp)
+// }
+
+func (c *ChannelController) GetChannelId(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(auth.UserIDKey).(uint)
+	if !ok {
+		http.Error(w, "Unauthorized: user ID not found", http.StatusUnauthorized)
+		return
+	}
+
+	var channel models.Channel
+	if err := c.DB.First(&channel, "user_id = ?", userID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// No channel found for this user
+			resp := map[string]int{"channel_id": -1}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(resp)
+			return
+		}
+		// Other DB error
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// Return just the channel ID
+	resp := map[string]uint{"channel_id": channel.ID}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+
